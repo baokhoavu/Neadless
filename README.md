@@ -1,8 +1,5 @@
 # Neadless
 
-[![CI](https://github.com/baokhoavu/Neadless/actions/workflows/ci.yml/badge.svg)](https://github.com/baokhoavu/Neadless/actions/workflows/ci.yml)
-*Note: CI badge may show failing until GitHub repository secrets are configured (see CI/CD Setup section below)*
-
 A modern blog application built with Next.js and Contentful CMS.
 
 ## Features
