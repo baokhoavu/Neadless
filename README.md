@@ -48,6 +48,28 @@ A modern blog application built with Next.js and Contentful CMS.
 3. Add and publish lesson entries
 4. Generate API keys and update `.env.local`
 
+## Caching Strategy
+
+This application implements multiple layers of caching to optimize Contentful API usage and prevent rate limiting:
+
+### **Next.js Caching**
+- **Static Generation**: Pages are pre-rendered at build time
+- **ISR**: Content revalidates every hour for production, immediately for preview
+- **Cache Tags**: Uses `posts` tag for targeted cache invalidation
+
+### **Request Optimization**
+- **Request Memoization**: Prevents duplicate API calls within the same request lifecycle
+- **Rate Limiting**: Minimum 100ms delay between Contentful requests
+- **Parallel Requests**: Uses `Promise.allSettled` for concurrent API calls with graceful failure handling
+
+### **Contentful Integration**
+- **Webhook Revalidation**: Automatic cache purging when content changes
+- **CDN Optimization**: Contentful images served via their CDN with WebP/AVIF support
+- **Error Handling**: Automatic retry on rate limit hits with exponential backoff
+
+### **Monitoring**
+Cache performance can be monitored via the API stats available in development mode.
+
 ## Deployment
 
 Deploy to Vercel with the Contentful integration for automatic content updates.

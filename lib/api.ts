@@ -47,8 +47,38 @@ interface GraphQLResponse<T> {
 	};
 }
 
+// Request memoization cache for the same request lifecycle
+const requestCache = new Map<string, Promise<unknown>>();
+
+// Rate limiting: simple delay between requests
+let lastRequestTime = 0;
+const MIN_REQUEST_INTERVAL = 100; // 100ms between requests
+
+async function delay(ms: number): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function fetchGraphQL(query: string, preview = false): Promise<unknown> {
-	return fetch(
+	const cacheKey = `${query}:${preview}`;
+
+	// Track total requests
+	cacheStats.requests++;
+
+	// Return cached promise if same request is in flight
+	if (requestCache.has(cacheKey)) {
+		cacheStats.cacheHits++;
+		return requestCache.get(cacheKey)!;
+	}
+
+	// Rate limiting: ensure minimum interval between requests
+	const now = Date.now();
+	const timeSinceLastRequest = now - lastRequestTime;
+	if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+		await delay(MIN_REQUEST_INTERVAL - timeSinceLastRequest);
+	}
+	lastRequestTime = Date.now();
+
+	const promise = fetch(
 		`https://graphql.contentful.com/content/v1/spaces/${process.env.CONTENTFUL_SPACE_ID}`,
 		{
 			method: "POST",
@@ -61,9 +91,35 @@ async function fetchGraphQL(query: string, preview = false): Promise<unknown> {
 				}`,
 			},
 			body: JSON.stringify({ query }),
-			next: { tags: ["posts"] },
+			next: {
+				tags: ["posts"],
+				revalidate: preview ? 0 : 3600, // 1 hour for production, no cache for preview
+			},
 		} as any,
-	).then((response) => response.json());
+	)
+		.then(async (response) => {
+			if (!response.ok) {
+				// Handle rate limiting
+				if (response.status === 429) {
+					cacheStats.rateLimitHits++;
+					cacheStats.lastRateLimit = new Date();
+					console.warn('Contentful rate limit hit, retrying after delay...');
+					await delay(2000); // Wait 2 seconds before retry
+					return fetchGraphQL(query, preview); // Retry once
+				}
+				throw new Error(`Contentful API error: ${response.status}`);
+			}
+			return response.json();
+		})
+		.finally(() => {
+			// Clean up cache after request completes
+			setTimeout(() => requestCache.delete(cacheKey), 100);
+		});
+
+	// Cache the promise
+	requestCache.set(cacheKey, promise);
+
+	return promise;
 }
 
 function extractPost(fetchResponse: GraphQLResponse<Post>): Post | null {
@@ -108,32 +164,53 @@ export async function getPostAndMorePosts(
 	slug: string,
 	preview: boolean,
 ): Promise<{ post: Post | null; morePosts: Post[] }> {
-	const entry = await fetchGraphQL(
-		`query {
-      lessonCollection(where: { slug: "${slug}" }, preview: ${
+	// Use Promise.allSettled to make requests in parallel but handle failures gracefully
+	const [entryResult, entriesResult] = await Promise.allSettled([
+		fetchGraphQL(
+			`query {
+        lessonCollection(where: { slug: "${slug}" }, preview: ${
 				preview ? "true" : "false"
 			}, limit: 1) {
-        items {
-          ${POST_GRAPHQL_FIELDS}
+          items {
+            ${POST_GRAPHQL_FIELDS}
+          }
         }
-      }
-    }`,
-		preview,
-	);
-	const entries = await fetchGraphQL(
-		`query {
-      lessonCollection(where: { slug_not_in: "${slug}" }, order: date_DESC, preview: ${
+      }`,
+			preview,
+		),
+		fetchGraphQL(
+			`query {
+        lessonCollection(where: { slug_not_in: "${slug}" }, order: date_DESC, preview: ${
 				preview ? "true" : "false"
 			}, limit: 2) {
-        items {
-          ${POST_GRAPHQL_FIELDS}
+          items {
+            ${POST_GRAPHQL_FIELDS}
+          }
         }
-      }
-    }`,
-		preview,
-	);
+      }`,
+			preview,
+		),
+	]);
+
+	// Handle potential failures gracefully
+	const entry = entryResult.status === 'fulfilled' ? entryResult.value : null;
+	const entries = entriesResult.status === 'fulfilled' ? entriesResult.value : null;
+
+// Cache monitoring utilities
+export const cacheStats = {
+	requests: 0,
+	cacheHits: 0,
+	rateLimitHits: 0,
+	lastRateLimit: null as Date | null,
+};
+
+// Export cache stats for monitoring
+export function getCacheStats() {
 	return {
-		post: extractPost(entry as GraphQLResponse<Post>),
-		morePosts: extractPostEntries(entries as GraphQLResponse<Post>),
+		...cacheStats,
+		cacheHitRate: cacheStats.requests > 0 ? (cacheStats.cacheHits / cacheStats.requests) * 100 : 0,
+		timeSinceLastRateLimit: cacheStats.lastRateLimit
+			? Date.now() - cacheStats.lastRateLimit.getTime()
+			: null,
 	};
 }
