@@ -55,6 +55,11 @@ interface NextFetchOptions {
 	revalidate?: number | false;
 }
 
+// Extended RequestInit for Next.js fetch API
+interface NextRequestInit extends RequestInit {
+	next?: NextFetchOptions;
+}
+
 // Request memoization cache for the same request lifecycle
 const requestCache = new Map<string, Promise<unknown>>();
 
@@ -104,8 +109,8 @@ async function fetchGraphQL(query: string, preview = false): Promise<unknown> {
 			next: {
 				tags: ["posts"],
 				revalidate: preview ? 0 : 3600, // 1 hour for production, no cache for preview
-			} satisfies NextFetchOptions,
-		})
+			},
+		} as NextRequestInit)
 		.then(async (response) => {
 			if (!response.ok) {
 				// Handle rate limiting
