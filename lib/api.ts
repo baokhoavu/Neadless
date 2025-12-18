@@ -18,6 +18,15 @@ interface CoverImage {
 
 interface Content {
 	json: unknown; // Contentful rich text JSON
+	links: {
+		assets: {
+			block: Array<{
+				sys: { id: string };
+				url: string;
+				description: string;
+			}>;
+		};
+	};
 }
 
 interface Post {
@@ -53,7 +62,7 @@ async function fetchGraphQL(query: string, preview = false): Promise<unknown> {
 			},
 			body: JSON.stringify({ query }),
 			next: { tags: ["posts"] },
-		},
+		} as any,
 	).then((response) => response.json());
 }
 
@@ -78,7 +87,7 @@ export async function getPreviewPostBySlug(
     }`,
 		true,
 	);
-	return extractPost(entry);
+	return extractPost(entry as GraphQLResponse<Post>);
 }
 
 export async function getAllPosts(isDraftMode: boolean): Promise<Post[]> {
@@ -92,7 +101,7 @@ export async function getAllPosts(isDraftMode: boolean): Promise<Post[]> {
     }`,
 		isDraftMode,
 	);
-	return extractPostEntries(entries);
+	return extractPostEntries(entries as GraphQLResponse<Post>);
 }
 
 export async function getPostAndMorePosts(
@@ -124,7 +133,7 @@ export async function getPostAndMorePosts(
 		preview,
 	);
 	return {
-		post: extractPost(entry),
-		morePosts: extractPostEntries(entries),
+		post: extractPost(entry as GraphQLResponse<Post>),
+		morePosts: extractPostEntries(entries as GraphQLResponse<Post>),
 	};
 }

@@ -1,8 +1,19 @@
 import Link from "next/link";
 import ContentfulImage from "../lib/contentful-image";
 
-function cn(...classes: (string | undefined | null | false)[]) {
-	return classes.filter(Boolean).join(" ");
+function cn(...inputs: (string | undefined | null | false | Record<string, boolean>)[]) {
+	return inputs
+		.flatMap(input => {
+			if (typeof input === 'string') return input;
+			if (typeof input === 'object' && input !== null) {
+				return Object.entries(input)
+					.filter(([, value]) => value)
+					.map(([key]) => key);
+			}
+			return [];
+		})
+		.filter(Boolean)
+		.join(" ");
 }
 
 export default function CoverImage({
@@ -21,7 +32,7 @@ export default function CoverImage({
 			width={2000}
 			height={1000}
 			className={cn("shadow-small", {
-				"hover:shadow-medium transition-shadow duration-200": slug,
+				"hover:shadow-medium transition-shadow duration-200": !!slug,
 			})}
 			src={url}
 		/>

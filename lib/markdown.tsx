@@ -38,7 +38,7 @@ function RichTextAsset({
 }
 
 export function Markdown({ content }: { content: Content }) {
-	return documentToReactComponents(content.json, {
+	return documentToReactComponents(content.json as any, {
 		renderNode: {
 			[BLOCKS.EMBEDDED_ASSET]: (node: unknown) => (
 				<RichTextAsset
