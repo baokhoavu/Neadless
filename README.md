@@ -48,6 +48,19 @@ A modern blog application built with Next.js and Contentful CMS.
 3. Add and publish lesson entries
 4. Generate API keys and update `.env.local`
 
+## CI/CD Setup
+
+For automated builds and deployments, configure the following secrets in your GitHub repository:
+
+1. Go to your repository Settings → Secrets and variables → Actions
+2. Add the following repository secrets:
+   - `CONTENTFUL_SPACE_ID`: Your Contentful space ID
+   - `CONTENTFUL_ACCESS_TOKEN`: Your Contentful delivery API access token
+   - `CONTENTFUL_PREVIEW_ACCESS_TOKEN`: Your Contentful preview API access token
+   - `CONTENTFUL_REVALIDATE_SECRET`: A secret string for webhook revalidation
+
+The CI workflow will automatically build and test your application using these credentials.
+
 ## Caching Strategy
 
 This application implements multiple layers of caching to optimize Contentful API usage and prevent rate limiting:

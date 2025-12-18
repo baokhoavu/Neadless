@@ -74,6 +74,25 @@ async function delay(ms: number): Promise<void> {
 async function fetchGraphQL(query: string, preview = false): Promise<unknown> {
 	const cacheKey = `${query}:${preview}`;
 
+	// Validate required environment variables
+	const spaceId = process.env.CONTENTFUL_SPACE_ID;
+	const accessToken = preview
+		? process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN
+		: process.env.CONTENTFUL_ACCESS_TOKEN;
+
+	if (!spaceId || spaceId === 'dummy') {
+		throw new Error(
+			'CONTENTFUL_SPACE_ID is not configured. Please set it in your environment variables.'
+		);
+	}
+
+	if (!accessToken || accessToken === 'dummy') {
+		const tokenName = preview ? 'CONTENTFUL_PREVIEW_ACCESS_TOKEN' : 'CONTENTFUL_ACCESS_TOKEN';
+		throw new Error(
+			`${tokenName} is not configured. Please set it in your environment variables.`
+		);
+	}
+
 	// Track total requests
 	cacheStats.requests++;
 
