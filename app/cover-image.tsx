@@ -1,11 +1,13 @@
 import Link from "next/link";
 import ContentfulImage from "../lib/contentful-image";
 
-function cn(...inputs: (string | undefined | null | false | Record<string, boolean>)[]) {
+function cn(
+	...inputs: (string | undefined | null | false | Record<string, boolean>)[]
+) {
 	return inputs
-		.flatMap(input => {
-			if (typeof input === 'string') return input;
-			if (typeof input === 'object' && input !== null) {
+		.flatMap((input) => {
+			if (typeof input === "string") return input;
+			if (typeof input === "object" && input !== null) {
 				return Object.entries(input)
 					.filter(([, value]) => value)
 					.map(([key]) => key);

@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 
-interface ContentfulImageProps extends Omit<React.ComponentProps<typeof Image>, 'loader'> {
+interface ContentfulImageProps
+	extends Omit<React.ComponentProps<typeof Image>, "loader"> {
 	src: string;
 	width?: number;
 	quality?: number;

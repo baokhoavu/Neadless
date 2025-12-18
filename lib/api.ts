@@ -1,3 +1,5 @@
+import type { Document } from "@contentful/rich-text-types";
+
 const POST_GRAPHQL_FIELDS = `
   slug
   title
@@ -16,8 +18,8 @@ interface CoverImage {
 	url: string;
 }
 
-interface Content {
-	json: unknown; // Contentful rich text JSON
+export interface Content {
+	json: Document; // Contentful rich text document
 	links: {
 		assets: {
 			block: Array<{
@@ -47,6 +49,12 @@ interface GraphQLResponse<T> {
 	};
 }
 
+// Next.js fetch options with cache tags
+interface NextFetchOptions {
+	tags?: string[];
+	revalidate?: number | false;
+}
+
 // Request memoization cache for the same request lifecycle
 const requestCache = new Map<string, Promise<unknown>>();
 
@@ -55,7 +63,7 @@ let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 100; // 100ms between requests
 
 async function delay(ms: number): Promise<void> {
-	return new Promise(resolve => setTimeout(resolve, ms));
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function fetchGraphQL(query: string, preview = false): Promise<unknown> {
@@ -67,7 +75,9 @@ async function fetchGraphQL(query: string, preview = false): Promise<unknown> {
 	// Return cached promise if same request is in flight
 	if (requestCache.has(cacheKey)) {
 		cacheStats.cacheHits++;
-		return requestCache.get(cacheKey)!;
+		// Safe to get since we just checked has() - TypeScript doesn't know Map.get() guarantees
+		const cached = requestCache.get(cacheKey);
+		if (cached) return cached;
 	}
 
 	// Rate limiting: ensure minimum interval between requests
@@ -94,16 +104,15 @@ async function fetchGraphQL(query: string, preview = false): Promise<unknown> {
 			next: {
 				tags: ["posts"],
 				revalidate: preview ? 0 : 3600, // 1 hour for production, no cache for preview
-			},
-		} as any,
-	)
+			} satisfies NextFetchOptions,
+		})
 		.then(async (response) => {
 			if (!response.ok) {
 				// Handle rate limiting
 				if (response.status === 429) {
 					cacheStats.rateLimitHits++;
 					cacheStats.lastRateLimit = new Date();
-					console.warn('Contentful rate limit hit, retrying after delay...');
+					console.warn("Contentful rate limit hit, retrying after delay...");
 					await delay(2000); // Wait 2 seconds before retry
 					return fetchGraphQL(query, preview); // Retry once
 				}
@@ -169,8 +178,8 @@ export async function getPostAndMorePosts(
 		fetchGraphQL(
 			`query {
         lessonCollection(where: { slug: "${slug}" }, preview: ${
-				preview ? "true" : "false"
-			}, limit: 1) {
+					preview ? "true" : "false"
+				}, limit: 1) {
           items {
             ${POST_GRAPHQL_FIELDS}
           }
@@ -181,8 +190,8 @@ export async function getPostAndMorePosts(
 		fetchGraphQL(
 			`query {
         lessonCollection(where: { slug_not_in: "${slug}" }, order: date_DESC, preview: ${
-				preview ? "true" : "false"
-			}, limit: 2) {
+					preview ? "true" : "false"
+				}, limit: 2) {
           items {
             ${POST_GRAPHQL_FIELDS}
           }
@@ -193,8 +202,20 @@ export async function getPostAndMorePosts(
 	]);
 
 	// Handle potential failures gracefully
-	const entry = entryResult.status === 'fulfilled' ? entryResult.value : null;
-	const entries = entriesResult.status === 'fulfilled' ? entriesResult.value : null;
+	const entry = entryResult.status === "fulfilled" ? entryResult.value : null;
+	const entries =
+		entriesResult.status === "fulfilled" ? entriesResult.value : null;
+
+	const post = entry ? extractPost(entry as GraphQLResponse<Post>) : null;
+	const morePosts = entries
+		? extractPostEntries(entries as GraphQLResponse<Post>)
+		: [];
+
+	return {
+		post,
+		morePosts,
+	};
+}
 
 // Cache monitoring utilities
 export const cacheStats = {
@@ -208,7 +229,10 @@ export const cacheStats = {
 export function getCacheStats() {
 	return {
 		...cacheStats,
-		cacheHitRate: cacheStats.requests > 0 ? (cacheStats.cacheHits / cacheStats.requests) * 100 : 0,
+		cacheHitRate:
+			cacheStats.requests > 0
+				? (cacheStats.cacheHits / cacheStats.requests) * 100
+				: 0,
 		timeSinceLastRateLimit: cacheStats.lastRateLimit
 			? Date.now() - cacheStats.lastRateLimit.getTime()
 			: null,

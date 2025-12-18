@@ -23,13 +23,16 @@ export async function POST(request: NextRequest) {
 			revalidated: true,
 			now: Date.now(),
 			tags: ["posts"],
-			paths: ["/", "/posts/[slug]"]
+			paths: ["/", "/posts/[slug]"],
 		});
 	} catch (error) {
 		console.error("Revalidation error:", error);
 		return NextResponse.json(
-			{ message: "Revalidation failed", error: error instanceof Error ? error.message : "Unknown error" },
-			{ status: 500 }
+			{
+				message: "Revalidation failed",
+				error: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 },
 		);
 	}
 }
@@ -40,7 +43,7 @@ export async function GET() {
 		message: "Cache revalidation endpoint",
 		method: "POST",
 		headers: {
-			"x-vercel-reval-key": "YOUR_CONTENTFUL_REVALIDATE_SECRET"
-		}
+			"x-vercel-reval-key": "YOUR_CONTENTFUL_REVALIDATE_SECRET",
+		},
 	});
 }
