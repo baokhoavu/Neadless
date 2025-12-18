@@ -81,7 +81,7 @@ This application implements multiple layers of caching to optimize Contentful AP
 - **Error Handling**: Automatic retry on rate limit hits with exponential backoff
 
 ### **Monitoring**
-Cache performance can be monitored via the API stats available in development mode.
+Cache performance can be monitored via the API stats available in development.
 
 ## Deployment
 
