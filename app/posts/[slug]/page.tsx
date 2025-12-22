@@ -32,7 +32,7 @@ export default async function PostPage({
 		<div className="container mx-auto px-5">
 			<h2 className="mb-20 mt-8 text-2xl font-bold leading-tight tracking-tight md:text-4xl md:tracking-tighter">
 				<Link href="/" className="hover:underline">
-					Blog
+					Stories
 				</Link>
 				.
 			</h2>
@@ -48,7 +48,7 @@ export default async function PostPage({
 						<CoverImage title={post.title} url={post.coverImage.url} />
 					)}
 				</div>
-				<div className="mx-auto max-w-2xl">
+				<div className="mx-auto max-w-7xl">
 					<div className="mb-6 block md:hidden">
 						{post.author && <Avatar name={post.author} picture={null} />}
 					</div>
@@ -57,8 +57,8 @@ export default async function PostPage({
 					</div>
 				</div>
 
-				<div className="mx-auto max-w-2xl">
-					<div className="prose">
+				<div className="mx-auto max-w-7xl">
+					<div className="prose max-w-none">
 						<Markdown content={post.content} />
 					</div>
 				</div>
