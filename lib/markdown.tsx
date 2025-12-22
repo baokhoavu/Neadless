@@ -28,17 +28,17 @@ function RichTextAsset({
 }
 
 export function Markdown({ content }: { content: Content }) {
-	return documentToReactComponents(content.json, {
-		renderNode: {
-			[BLOCKS.EMBEDDED_ASSET]: (node: unknown) => (
-				<RichTextAsset
-					id={
-						(node as { data: { target: { sys: { id: string } } } }).data.target
-							.sys.id
-					}
-					assets={content.links.assets.block}
-				/>
-			),
-		},
-	});
+	       return documentToReactComponents(content.json, {
+		       renderNode: {
+			       [BLOCKS.EMBEDDED_ASSET]: (node: unknown) => (
+				       <RichTextAsset
+					       id={
+						       (node as { data: { target: { sys: { id: string } } } }).data.target
+							       .sys.id
+					       }
+					       assets={content?.links?.assets?.block ?? []}
+				       />
+			       ),
+		       },
+	       });
 }
