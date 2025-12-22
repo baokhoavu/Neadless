@@ -1,8 +1,8 @@
 # Neadless
 
-A modern, performant blog application built with Next.js 14 and Contentful CMS, designed for seamless content management and optimal user experience.
+A modern, high-performance blog application built with Next.js 14 and Contentful CMS, designed for seamless content management and a great user experience.
 
-## 🚀 Features
+## Features
 
 - **Next.js 14 with App Router**: Leveraging the latest Next.js features for superior performance and developer experience
 - **Static Site Generation (SSG)**: Pre-rendered pages for lightning-fast load times and excellent SEO
@@ -14,7 +14,7 @@ A modern, performant blog application built with Next.js 14 and Contentful CMS, 
 - **Advanced Caching Strategy**: Multi-layer caching to optimize API usage and prevent rate limiting
 - **SEO Optimized**: Meta tags, structured data, and performance optimizations out of the box
 
-## 🏗️ Architecture
+## Architecture
 
 ### Tech Stack
 - **Frontend**: Next.js 14, React 18, TypeScript
@@ -36,7 +36,7 @@ neadless/
 └── public/                # Static assets
 ```
 
-## 🛠️ Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+ and npm
@@ -81,7 +81,7 @@ neadless/
 
 6. **Open your browser** to [http://localhost:3000](http://localhost:3000)
 
-## 📝 Content Management
+## Content Management
 
 ### Content Model
 The application uses a "Lesson" content type with the following fields:
@@ -96,7 +96,7 @@ The application uses a "Lesson" content type with the following fields:
 ### Draft Mode
 Access draft content by appending `?draft=true` to any blog post URL. This allows content creators to preview unpublished changes before going live.
 
-## 🚀 Deployment
+## Deployment
 
 ### Vercel (Recommended)
 1. Connect your GitHub repository to Vercel
@@ -110,7 +110,7 @@ npm run build
 npm start
 ```
 
-## 🔧 Development
+## Development
 
 ### Available Scripts
 - `npm run dev` - Start development server
@@ -124,7 +124,7 @@ npm start
 - `GET /api/posts` - Fetch all published posts
 - `GET /api/posts/[slug]` - Fetch individual post by slug
 
-## 📊 Performance & Caching
+## Performance & Caching
 
 ### Caching Layers
 1. **Next.js ISR**: Content revalidates every hour in production
@@ -137,7 +137,7 @@ npm start
 - Vercel Analytics integration for production metrics
 - Contentful webhook logs for content update tracking
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -145,11 +145,11 @@ npm start
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Next.js](https://nextjs.org/) for the amazing React framework
 - [Contentful](https://www.contentful.com/) for the powerful headless CMS
@@ -158,4 +158,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built by Baokhoa Vu**
+Built by Baokhoa Vu
