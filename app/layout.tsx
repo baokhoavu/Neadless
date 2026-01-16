@@ -3,8 +3,8 @@ import { Inter } from "next/font/google";
 import { CMS_NAME, EXAMPLE_PATH } from "@/lib/constants";
 
 export const metadata = {
-	title: `Next.js and ${CMS_NAME} Example`,
-	description: `This is a blog built with Next.js and ${CMS_NAME}.`,
+  title: "Neadless – Modern Blog by Baokhoa Vu",
+  description: "A high-performance blog built with Next.js 14 and Contentful.",
 };
 
 const inter = Inter({
